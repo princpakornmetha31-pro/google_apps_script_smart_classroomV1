@@ -1,0 +1,1696 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Smart Classroom V1 </title>
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600&display=swap"
+    rel="stylesheet"
+  >
+
+  <script src="https://www.gstatic.com/charts/loader.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <style>
+    :root {
+      --primary: #5c6ac4;
+      --primary-dark: #4753a2;
+      --bg: #f8fafc;
+      --card: #fff;
+      --text: #1e293b;
+      --muted: #64748b;
+      --success: #10b981;
+      --danger: #ef4444;
+      --border: #e2e8f0;
+      --navy: #1e293b;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      margin: 0;
+      color: var(--text);
+      background: var(--bg);
+      font-family: 'Sarabun', Arial, sans-serif;
+      line-height: 1.5;
+      overflow-x: hidden;
+      -webkit-text-size-adjust: 100%;
+    }
+
+    button,
+    input {
+      padding: 11px 15px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    button:disabled {
+      cursor: not-allowed;
+      opacity: .6;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: auto;
+      padding: 16px;
+    }
+
+    .header {
+      margin-bottom: 24px;
+      padding: 30px 20px;
+      color: #fff;
+      text-align: center;
+      border-radius: 20px;
+      background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+      box-shadow: 0 10px 25px -5px rgba(59, 130, 246, .3);
+    }
+
+    .header h1 {
+      margin: 0;
+      font-size: 28px;
+    }
+
+    .header p {
+      margin: 8px 0 0;
+      opacity: .9;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap: 20px;
+    }
+
+    .card {
+      height: fit-content;
+      padding: 24px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      box-shadow: 0 4px 8px rgba(15, 23, 42, .05);
+    }
+
+    .card h2 {
+      margin: 0 0 20px;
+      font-size: 20px;
+    }
+
+    .row,
+    .toolbar {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .row {
+      margin-bottom: 20px;
+    }
+
+    .toolbar {
+      margin: 16px 0;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+    }
+
+    .search-box {
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .search-box input {
+      width: 100%;
+    }
+
+    .btn-primary {
+      color: #fff;
+      background: var(--primary);
+      border-color: var(--primary);
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-dark);
+    }
+
+    .btn-success {
+      color: #fff;
+      background: var(--success);
+      border-color: var(--success);
+    }
+
+    .btn-navy {
+      color: #fff;
+      background: var(--navy);
+      border-color: var(--navy);
+    }
+
+    .btn-light {
+      color: var(--text);
+      background: #fff;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    .stat {
+      padding: 16px;
+      text-align: center;
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+    }
+
+    .muted {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .refresh-status {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      margin: 8px 0 14px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .refresh-dot {
+      width: 9px;
+      height: 9px;
+      flex: 0 0 9px;
+      background: var(--success);
+      border-radius: 50%;
+      box-shadow: 0 0 0 4px rgba(16, 185, 129, .12);
+    }
+
+    .refresh-status.updating .refresh-dot {
+      background: #f59e0b;
+      box-shadow: 0 0 0 4px rgba(245, 158, 11, .14);
+    }
+
+    .refresh-status.error .refresh-dot {
+      background: var(--danger);
+      box-shadow: 0 0 0 4px rgba(239, 68, 68, .12);
+    }
+
+    .num {
+      font-size: 32px;
+      font-weight: 700;
+    }
+
+    .present .num {
+      color: var(--success);
+    }
+
+    .absent .num {
+      color: var(--danger);
+    }
+
+    #chart_div {
+      width: 100%;
+      height: 300px;
+      margin-top: 15px;
+    }
+
+    .table-wrap {
+      max-height: 550px;
+      overflow: auto;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+    }
+
+    table {
+      width: 100%;
+      min-width: 500px;
+      border-collapse: collapse;
+      background: #fff;
+    }
+
+    th,
+    td {
+      padding: 14px 16px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+
+    th {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      color: var(--muted);
+      background: #f8fafc;
+      font-size: 13px;
+    }
+
+    .attendance-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .attendance-label input {
+      display: none;
+    }
+
+    .attendance-label.present {
+      color: #166534;
+      background: #dcfce7;
+    }
+
+    .attendance-label.absent {
+      color: #991b1b;
+      background: #fee2e2;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      background: rgba(0, 0, 0, .5);
+      backdrop-filter: blur(4px);
+    }
+
+    .modal-content {
+      display: flex;
+      width: 100%;
+      max-width: 1000px;
+      max-height: 90vh;
+      flex-direction: column;
+      overflow: hidden;
+      background: #fff;
+      border-radius: 24px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, .25);
+    }
+
+    .modal-header,
+    .modal-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 20px 24px;
+      border-color: var(--border);
+    }
+
+    .modal-header {
+      border-bottom: 1px solid var(--border);
+    }
+
+    .modal-footer {
+      justify-content: flex-end;
+      border-top: 1px solid var(--border);
+    }
+
+    .modal-body {
+      flex: 1;
+      padding: 24px;
+      overflow-y: auto;
+    }
+
+    .loading {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255, 255, 255, .8);
+    }
+
+    .loading-box {
+      padding: 24px 40px;
+      text-align: center;
+      background: #fff;
+      border-radius: 20px;
+      box-shadow: 0 20px 30px rgba(0, 0, 0, .1);
+    }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      margin: 0 auto 12px;
+      border: 4px solid #eee;
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    .toast {
+      display: none;
+      position: fixed;
+      left: 50%;
+      bottom: 24px;
+      z-index: 10000;
+      max-width: calc(100% - 32px);
+      padding: 12px 24px;
+      color: #fff;
+      text-align: center;
+      transform: translateX(-50%);
+      background: var(--navy);
+      border-radius: 12px;
+    }
+
+    .hide-for-pdf {
+      display: none !important;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    @media (max-width: 900px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Mobile-first refinements for comfortable one-hand use. */
+    @media (max-width: 640px) {
+      .container {
+        padding: 12px;
+      }
+
+      .header {
+        margin: -12px -12px 16px;
+        padding: 22px 16px;
+        border-radius: 0;
+      }
+
+      .header h1 {
+        font-size: 23px;
+      }
+
+      .header p {
+        font-size: 14px;
+      }
+
+      .grid {
+        gap: 12px;
+      }
+
+      .card {
+        padding: 16px;
+        border-radius: 16px;
+      }
+
+      .card h2 {
+        margin-bottom: 16px;
+        font-size: 18px;
+      }
+
+      button,
+      input {
+        min-height: 44px;
+        font-size: 16px;
+      }
+
+      .row,
+      .toolbar {
+        gap: 8px;
+      }
+
+      .row {
+        margin-bottom: 16px;
+      }
+
+      .toolbar {
+        margin: 12px 0;
+        padding-top: 12px;
+      }
+
+      #dateControls,
+      #searchToolbar {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      #dateControls input,
+      #searchToolbar .search-box {
+        grid-column: 1 / -1;
+        width: 100%;
+      }
+
+      #dateControls button,
+      #searchToolbar button,
+      .modal-footer button {
+        width: 100%;
+      }
+
+      .search-box {
+        min-width: 0;
+      }
+
+      .stats {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 8px;
+      }
+
+      .stat {
+        padding: 10px 6px;
+        border-radius: 12px;
+      }
+
+      .stat .muted {
+        overflow-wrap: anywhere;
+        font-size: 12px;
+      }
+
+      .num {
+        font-size: 26px;
+      }
+
+      #chart_div {
+        height: 230px;
+        margin-top: 10px;
+      }
+
+      .table-wrap {
+        max-height: 460px;
+        border-radius: 12px;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      th,
+      td {
+        padding: 12px;
+      }
+
+      /* The daily attendance table becomes a compact, no-scroll list. */
+      .student-table {
+        min-width: 0;
+      }
+
+      .student-table,
+      .student-table tbody {
+        display: block;
+        width: 100%;
+      }
+
+      .student-table thead {
+        display: none;
+      }
+
+      .student-table tr {
+        display: grid;
+        grid-template-columns: 36px minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 12px;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .student-table tr:last-child {
+        border-bottom: 0;
+      }
+
+      .student-table td {
+        min-width: 0;
+        padding: 0;
+        border: 0;
+      }
+
+      .student-table td:first-child {
+        color: var(--muted);
+        text-align: center;
+        font-weight: 600;
+      }
+
+      .student-table td[colspan] {
+        grid-column: 1 / -1;
+        padding: 28px 0 !important;
+      }
+
+      .attendance-label {
+        min-height: 40px;
+        gap: 6px;
+        padding: 6px 8px;
+        white-space: nowrap;
+      }
+
+      .modal {
+        align-items: flex-end;
+        padding: 0;
+      }
+
+      .modal-content {
+        max-height: 92vh;
+        border-radius: 20px 20px 0 0;
+      }
+
+      .modal-header,
+      .modal-footer,
+      .modal-body {
+        padding: 16px;
+      }
+
+      .modal-header h2 {
+        font-size: 18px;
+      }
+
+      .modal-header > button {
+        flex: 0 0 44px;
+        width: 44px;
+        min-height: 44px;
+        padding: 0;
+      }
+
+      .modal-footer {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .loading-box {
+        width: calc(100% - 32px);
+        padding: 20px;
+      }
+
+      .toast {
+        bottom: 16px;
+        padding: 12px 16px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="loading" id="loading">
+    <div class="loading-box">
+      <div class="spinner"></div>
+      <div id="loadingText">กำลังดำเนินการ...</div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <div class="modal" id="summaryModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 style="margin:0;">📊 สรุปภาพรวมการเข้าเรียน</h2>
+        <button class="btn-light" onclick="closeSummary()">✕</button>
+      </div>
+
+      <div class="modal-body" id="summaryPrintArea">
+        <div id="summaryMeta" class="muted" style="margin-bottom:20px;"></div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>ชื่อเล่น</th>
+                <th style="text-align:center;">มาเรียน</th>
+                <th style="text-align:center;">ขาดเรียน</th>
+                <th style="text-align:center;">เช็คแล้ว</th>
+                <th style="text-align:center;">คงเหลือ</th>
+                <th style="text-align:center;">สัดส่วน (%)</th>
+              </tr>
+            </thead>
+            <tbody id="summaryBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="modal-footer no-print">
+        <button class="btn-navy" onclick="exportSummaryPDF()">
+          📄 ดาวน์โหลด PDF สรุปรวม
+        </button>
+        <button class="btn-light" onclick="closeSummary()">
+          ปิดหน้าต่าง
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="examScoreModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 style="margin:0;">📝 คะแนนสอบปลายภาค</h2>
+        <button class="btn-light" onclick="closeExamScores()">✕</button>
+      </div>
+
+      <div class="modal-body" id="examScorePrintArea">
+        <div id="examScoreMeta" class="muted" style="margin-bottom:20px;">
+          คะแนนจากชีต Students คอลัมน์ H
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th width="90">เลขที่</th>
+                <th>ชื่อนักเรียน</th>
+                <th style="text-align:center;">คะแนนสอบปลายภาค</th>
+              </tr>
+            </thead>
+            <tbody id="examScoreBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-light" onclick="closeExamScores()">
+          ปิดหน้าต่าง
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <main class="container" id="reportArea">
+    <header class="header">
+      <h1>Smart Classroom V1</h1>
+      <p>ระบบเช็คชื่อ • สรุปภาพรวมรายคน • GermanClassA1</p>
+    </header>
+
+    <section class="grid">
+      <div class="card">
+        <h2>📅 รายชื่อนักเรียน</h2>
+
+        <div class="row no-print" id="dateControls">
+          <input
+            type="date"
+            id="attendanceDate"
+            onchange="loadAttendance()"
+          >
+
+          <button class="btn-light" onclick="setToToday()">
+            📍 วันนี้
+          </button>
+
+          <button class="btn-success" onclick="saveAttendance()">
+            💾 บันทึกข้อมูล
+          </button>
+        </div>
+
+        <div class="toolbar no-print" id="searchToolbar">
+          <div class="search-box">
+            <input
+              id="searchBox"
+              type="text"
+              placeholder="🔍 ค้นหาเลขที่ หรือ ชื่อ..."
+              oninput="renderStudents()"
+            >
+          </div>
+
+          <button class="btn-light" onclick="checkAll(true)">
+            ✅ ทั้งหมด
+          </button>
+
+          <button class="btn-light" onclick="checkAll(false)">
+            ❌ ยกเลิก
+          </button>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th width="80">เลขที่</th>
+                <th>ชื่อนักเรียน</th>
+                <th width="120">สถานะ</th>
+              </tr>
+            </thead>
+            <tbody id="studentTable"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>📊 สรุปผลรายวัน</h2>
+
+        <div id="dateDisplay" class="muted">
+          กำลังโหลดข้อมูล...
+        </div>
+
+        <div class="refresh-status" id="refreshStatus">
+          <span class="refresh-dot"></span>
+          <span id="lastUpdatedText">กำลังรอการอัปเดตครั้งแรก...</span>
+        </div>
+
+        <div class="stats">
+          <div class="stat">
+            <div class="muted">ทั้งหมด</div>
+            <div class="num" id="totalStudent">0</div>
+          </div>
+
+          <div class="stat present">
+            <div class="muted">มาเรียน</div>
+            <div class="num" id="presentStudent">0</div>
+          </div>
+
+          <div class="stat absent">
+            <div class="muted">ขาดเรียน</div>
+            <div class="num" id="absentStudent">0</div>
+          </div>
+        </div>
+
+        <div id="chart_div">กำลังเตรียมกราฟ...</div>
+
+        <div
+          class="no-print"
+          id="actionButtons"
+          style="margin-top:24px;display:grid;gap:10px;"
+        >
+          <button class="btn-navy" onclick="loadSummaryAll()">
+            📊 สรุปภาพรวมทั้งเทอม
+          </button>
+
+          <button class="btn-navy" onclick="showExamScores()">
+            📝 ดูคะแนนสอบปลายภาค
+          </button>
+
+          <button class="btn-primary" onclick="exportPDF()">
+            📄 ดาวน์โหลดรายงานรายวัน PDF
+          </button>
+
+          <button class="btn-light" onclick="calculateResult()">
+            🔄 คำนวณผลการเรียนใหม่
+          </button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    let students = [];
+    let attendanceMap = {};
+    let chartLoaded = false;
+    let autoRefreshTimer = null;
+    let dashboardRefreshRunning = false;
+    const AUTO_REFRESH_MS = 30000;
+
+    let latestDashboard = {
+      total: 0,
+      present: 0,
+      absent: 0
+    };
+
+    function normalizeId(value) {
+      return String(value == null ? '' : value).trim();
+    }
+
+    function hasAppsScript() {
+      return typeof google !== 'undefined' &&
+        google.script &&
+        google.script.run;
+    }
+
+    function showLoading(show, text) {
+      document.getElementById('loadingText').textContent =
+        text || 'กำลังดำเนินการ...';
+
+      document.getElementById('loading').style.display =
+        show ? 'flex' : 'none';
+    }
+
+    function showToast(message) {
+      const element = document.getElementById('toast');
+
+      element.textContent =
+        message || 'ดำเนินการเรียบร้อย';
+
+      element.style.display = 'block';
+
+      clearTimeout(window.toastTimer);
+
+      window.toastTimer = setTimeout(function() {
+        element.style.display = 'none';
+      }, 3500);
+    }
+
+    function getErrorMessage(error) {
+      return error && error.message
+        ? error.message
+        : String(error || 'ไม่ทราบสาเหตุ');
+    }
+
+    if (
+      typeof google !== 'undefined' &&
+      google.charts &&
+      typeof google.charts.load === 'function'
+    ) {
+      google.charts.load('current', {
+        packages: ['corechart']
+      });
+
+      google.charts.setOnLoadCallback(function() {
+        chartLoaded = true;
+        drawChart(
+          latestDashboard.present,
+          latestDashboard.absent
+        );
+      });
+    }
+
+    function formatClockTime(date) {
+      return date.toLocaleTimeString('th-TH', {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      });
+    }
+
+    function setRefreshStatus(status, message) {
+      const container = document.getElementById('refreshStatus');
+      const text = document.getElementById('lastUpdatedText');
+
+      if (!container || !text) {
+        return;
+      }
+
+      container.className = 'refresh-status' +
+        (status ? ' ' + status : '');
+
+      text.textContent = message;
+    }
+
+    function markDashboardUpdated() {
+      setRefreshStatus(
+        '',
+        'อัปเดตล่าสุด: ' + formatClockTime(new Date()) +
+        ' • อัตโนมัติทุก 30 วินาที'
+      );
+    }
+
+    function refreshDashboardOnly() {
+      if (
+        dashboardRefreshRunning ||
+        document.hidden ||
+        !hasAppsScript()
+      ) {
+        return;
+      }
+
+      const date =
+        document.getElementById('attendanceDate').value;
+
+      if (!date) {
+        return;
+      }
+
+      dashboardRefreshRunning = true;
+      setRefreshStatus('updating', 'กำลังอัปเดต Dashboard...');
+
+      google.script.run
+        .withSuccessHandler(function(data) {
+          dashboardRefreshRunning = false;
+          updateDashboardUI(data);
+          markDashboardUpdated();
+        })
+        .withFailureHandler(function(error) {
+          dashboardRefreshRunning = false;
+          setRefreshStatus(
+            'error',
+            'อัปเดตอัตโนมัติไม่สำเร็จ • ระบบจะลองใหม่ใน 30 วินาที'
+          );
+        })
+        .getTodayDashboard(date);
+    }
+
+    function startAutoRefresh() {
+      if (autoRefreshTimer !== null) {
+        clearInterval(autoRefreshTimer);
+      }
+
+      autoRefreshTimer = setInterval(
+        refreshDashboardOnly,
+        AUTO_REFRESH_MS
+      );
+    }
+
+    function getTodayString() {
+      const date = new Date();
+
+      return date.getFullYear() + '-' +
+        String(date.getMonth() + 1).padStart(2, '0') + '-' +
+        String(date.getDate()).padStart(2, '0');
+    }
+
+    function setToToday() {
+      document.getElementById('attendanceDate').value =
+        getTodayString();
+
+      loadAttendance();
+    }
+
+    function drawChart(present, absent) {
+      const chartElement =
+        document.getElementById('chart_div');
+
+      if (!chartElement) {
+        return;
+      }
+
+      if (!chartLoaded) {
+        chartElement.textContent = 'กำลังโหลดกราฟ...';
+        return;
+      }
+
+      present = Number(present) || 0;
+      absent = Number(absent) || 0;
+
+      if (present === 0 && absent === 0) {
+        chartElement.innerHTML =
+          '<div style="padding-top:120px;text-align:center;color:#64748b;">' +
+          'ยังไม่มีข้อมูลการเช็คชื่อ</div>';
+        return;
+      }
+
+      const data =
+        google.visualization.arrayToDataTable([
+          ['สถานะ', 'จำนวน'],
+          ['มาเรียน', present],
+          ['ขาดเรียน', absent]
+        ]);
+
+      const isMobile = window.matchMedia &&
+        window.matchMedia('(max-width: 640px)').matches;
+
+      const options = {
+        title: 'สัดส่วนการเข้าเรียน (%)',
+        pieHole: 0.4,
+        colors: ['#10b981', '#ef4444'],
+        chartArea: {
+          width: isMobile ? '96%' : '90%',
+          height: isMobile ? '68%' : '75%'
+        },
+        legend: {
+          position: 'bottom',
+          textStyle: {
+            fontSize: isMobile ? 12 : 14
+          }
+        },
+        titleTextStyle: {
+          fontSize: isMobile ? 13 : 16
+        },
+        pieSliceText: 'percentage',
+        backgroundColor: 'transparent'
+      };
+
+      new google.visualization.PieChart(chartElement)
+        .draw(data, options);
+    }
+
+    function updateDashboardUI(data) {
+      if (!data) {
+        return;
+      }
+
+      latestDashboard = {
+        total: Number(data.total) || 0,
+        present: Number(data.present) || 0,
+        absent: Number(data.absent) || 0
+      };
+
+      document.getElementById('totalStudent').textContent =
+        latestDashboard.total;
+
+      document.getElementById('presentStudent').textContent =
+        latestDashboard.present;
+
+      document.getElementById('absentStudent').textContent =
+        latestDashboard.absent;
+
+      drawChart(
+        latestDashboard.present,
+        latestDashboard.absent
+      );
+    }
+
+    function renderStudents() {
+      const tbody =
+        document.getElementById('studentTable');
+
+      const table = tbody.closest('table');
+
+      if (table) {
+        table.classList.add('student-table');
+      }
+
+      const searchTerm =
+        document.getElementById('searchBox')
+          .value
+          .toLowerCase()
+          .trim();
+
+      tbody.innerHTML = '';
+
+      const filtered = students.filter(function(student) {
+        const no = String(student.no || '').toLowerCase();
+        const nickname =
+          String(student.nickname || '').toLowerCase();
+        const firstname =
+          String(student.firstname || '').toLowerCase();
+
+        return !searchTerm ||
+          no.includes(searchTerm) ||
+          nickname.includes(searchTerm) ||
+          firstname.includes(searchTerm);
+      });
+
+      if (!filtered.length) {
+        tbody.innerHTML =
+          '<tr><td colspan="3" style="text-align:center;padding:40px;color:#64748b;">' +
+          'ไม่พบข้อมูลนักเรียน</td></tr>';
+        return;
+      }
+
+      filtered.forEach(function(student) {
+        const id = normalizeId(student.id);
+        const present = attendanceMap[id] === true;
+
+        const tr = document.createElement('tr');
+
+        const noCell = document.createElement('td');
+        noCell.textContent = student.no || '';
+
+        const nameCell = document.createElement('td');
+
+        const nickname = document.createElement('div');
+        nickname.style.fontWeight = '600';
+        nickname.textContent = student.nickname || '';
+
+        const firstname = document.createElement('div');
+        firstname.className = 'muted';
+        firstname.textContent = student.firstname || '';
+
+        nameCell.appendChild(nickname);
+        nameCell.appendChild(firstname);
+
+        const statusCell = document.createElement('td');
+        const label = document.createElement('label');
+
+        label.className =
+          'attendance-label ' +
+          (present ? 'present' : 'absent');
+
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.checked = present;
+
+        checkbox.addEventListener('change', function() {
+          toggleAttendance(id, checkbox.checked);
+        });
+
+        const statusText = document.createElement('span');
+        statusText.textContent =
+          present ? '● มาเรียน' : '○ ขาดเรียน';
+
+        label.appendChild(checkbox);
+        label.appendChild(statusText);
+        statusCell.appendChild(label);
+
+        tr.appendChild(noCell);
+        tr.appendChild(nameCell);
+        tr.appendChild(statusCell);
+        tbody.appendChild(tr);
+      });
+    }
+
+    function toggleAttendance(id, checked) {
+      attendanceMap[normalizeId(id)] = checked;
+      renderStudents();
+      updateLocalDashboard();
+    }
+
+    function checkAll(value) {
+      students.forEach(function(student) {
+        attendanceMap[normalizeId(student.id)] = value;
+      });
+
+      renderStudents();
+      updateLocalDashboard();
+    }
+
+    function updateLocalDashboard() {
+      let present = 0;
+
+      students.forEach(function(student) {
+        if (attendanceMap[normalizeId(student.id)] === true) {
+          present++;
+        }
+      });
+
+      updateDashboardUI({
+        total: students.length,
+        present: present,
+        absent: students.length - present
+      });
+    }
+
+    function resetAttendanceMap() {
+      attendanceMap = {};
+
+      students.forEach(function(student) {
+        attendanceMap[normalizeId(student.id)] = false;
+      });
+    }
+
+    function init() {
+      showLoading(true, 'กำลังเตรียมข้อมูล...');
+
+      if (!hasAppsScript()) {
+        showLoading(false);
+        showToast(
+          'กรุณาเปิดหน้านี้ผ่าน Google Apps Script Web App'
+        );
+        return;
+      }
+
+      google.script.run
+        .withSuccessHandler(function(response) {
+          if (!response || response.success !== true) {
+            showLoading(false);
+            showToast(
+              'โหลดข้อมูลไม่สำเร็จ: ' +
+              (response && response.message
+                ? response.message
+                : 'ไม่ทราบสาเหตุ')
+            );
+            return;
+          }
+
+          students = Array.isArray(response.students)
+            ? response.students
+            : [];
+
+          updateDashboardUI(response.dashboard);
+
+          document.getElementById('attendanceDate').value =
+            response.serverDate || getTodayString();
+
+          renderStudents();
+          loadAttendance();
+        })
+        .withFailureHandler(function(error) {
+          showLoading(false);
+          showToast(
+            'ไม่สามารถติดต่อ Server ได้: ' +
+            getErrorMessage(error)
+          );
+        })
+        .getInitialData();
+    }
+
+    function loadAttendance() {
+      const date =
+        document.getElementById('attendanceDate').value;
+
+      if (!date || !hasAppsScript()) {
+        return;
+      }
+
+      showLoading(true, 'กำลังโหลดข้อมูลวันที่เลือก...');
+
+      google.script.run
+        .withSuccessHandler(function(response) {
+          showLoading(false);
+
+          if (!response || response.success !== true) {
+            resetAttendanceMap();
+            renderStudents();
+            updateLocalDashboard();
+
+            document.getElementById('dateDisplay').textContent =
+              'ยังไม่มีการเช็คชื่อวันที่เลือก';
+
+            showToast(
+              response && response.message
+                ? response.message
+                : 'ไม่พบข้อมูลวันที่เลือก'
+            );
+            return;
+          }
+
+          attendanceMap = {};
+
+          Object.keys(response.data || {}).forEach(function(id) {
+            attendanceMap[normalizeId(id)] =
+              response.data[id] === true;
+          });
+
+          document.getElementById('dateDisplay').textContent =
+            'ข้อมูลประจำวันที่: ' +
+            (response.dateText || date);
+
+          renderStudents();
+          updateDashboardUI(response.dashboard);
+          markDashboardUpdated();
+          showToast('โหลดข้อมูลเรียบร้อย');
+        })
+        .withFailureHandler(function(error) {
+          showLoading(false);
+          showToast(
+            'โหลดข้อมูลล้มเหลว: ' +
+            getErrorMessage(error)
+          );
+        })
+        .getAttendance(date);
+    }
+
+    function saveAttendance() {
+      const date =
+        document.getElementById('attendanceDate').value;
+
+      if (!date || !students.length || !hasAppsScript()) {
+        showToast(
+          !date
+            ? 'กรุณาเลือกวันที่'
+            : 'ไม่พบข้อมูลหรือไม่สามารถติดต่อ Apps Script ได้'
+        );
+        return;
+      }
+
+      const payload = students.map(function(student) {
+        const id = normalizeId(student.id);
+
+        return {
+          id: student.id,
+          present: attendanceMap[id] === true
+        };
+      });
+
+      showLoading(true, 'กำลังบันทึกและคำนวณผล...');
+
+      google.script.run
+        .withSuccessHandler(function(response) {
+          showLoading(false);
+
+          if (!response || response.success !== true) {
+            showToast(
+              'บันทึกไม่สำเร็จ: ' +
+              (response && response.message
+                ? response.message
+                : 'ไม่ทราบสาเหตุ')
+            );
+            return;
+          }
+
+          updateDashboardUI(response.dashboard);
+          markDashboardUpdated();
+          showToast(response.message || 'บันทึกเรียบร้อย');
+        })
+        .withFailureHandler(function(error) {
+          showLoading(false);
+          showToast(
+            'ไม่สามารถบันทึกได้: ' +
+            getErrorMessage(error)
+          );
+        })
+        .saveAttendance(date, payload);
+    }
+
+    function calculateResult() {
+      if (!hasAppsScript()) {
+        showToast('ไม่สามารถติดต่อ Apps Script ได้');
+        return;
+      }
+
+      showLoading(true, 'กำลังคำนวณผลการเรียนใหม่...');
+
+      google.script.run
+        .withSuccessHandler(function(message) {
+          showLoading(false);
+          showToast(message || 'คำนวณผลเรียบร้อย');
+        })
+        .withFailureHandler(function(error) {
+          showLoading(false);
+          showToast(
+            'คำนวณไม่สำเร็จ: ' +
+            getErrorMessage(error)
+          );
+        })
+        .calculateResult();
+    }
+
+    function loadSummaryAll() {
+      if (!hasAppsScript()) {
+        showToast('ไม่สามารถติดต่อ Apps Script ได้');
+        return;
+      }
+
+      showLoading(true, 'กำลังประมวลผลสรุปภาพรวม...');
+
+      google.script.run
+        .withSuccessHandler(function(response) {
+          showLoading(false);
+
+          if (!response || response.success !== true) {
+            showToast(
+              response && response.message
+                ? response.message
+                : 'ไม่สามารถโหลดสรุปได้'
+            );
+            return;
+          }
+
+          renderSummary(response.summary || []);
+
+          document.getElementById('summaryModal').style.display =
+            'flex';
+        })
+        .withFailureHandler(function(error) {
+          showLoading(false);
+          showToast(
+            'โหลดสรุปไม่สำเร็จ: ' +
+            getErrorMessage(error)
+          );
+        })
+        .getSummaryAll();
+    }
+
+    function renderSummary(data) {
+      const tbody =
+        document.getElementById('summaryBody');
+
+      const meta =
+        document.getElementById('summaryMeta');
+
+      tbody.innerHTML = '';
+
+      if (!data.length) {
+        meta.textContent = 'ยังไม่มีข้อมูลการเช็คชื่อ';
+        tbody.innerHTML =
+          '<tr><td colspan="6" style="text-align:center;padding:40px;">' +
+          'ไม่พบข้อมูล</td></tr>';
+        return;
+      }
+
+      meta.textContent =
+        'ระยะเวลาทั้งหมดในเทอม: ' +
+        data[0].totalDays +
+        ' วัน | เช็คชื่อไปแล้ว: ' +
+        data[0].checked +
+        ' วัน';
+
+      data.forEach(function(row) {
+        const tr = document.createElement('tr');
+
+        [
+          row.nickname || '',
+          row.present || 0,
+          row.absent || 0,
+          row.checked || 0,
+          row.remaining || 0,
+          row.percent || '0%'
+        ].forEach(function(value, index) {
+          const cell = document.createElement('td');
+
+          cell.textContent = value;
+          cell.style.textAlign =
+            index === 0 ? 'left' : 'center';
+
+          if (index === 1) {
+            cell.style.color = 'var(--success)';
+          }
+
+          if (index === 2) {
+            cell.style.color = 'var(--danger)';
+          }
+
+          tr.appendChild(cell);
+        });
+
+        tbody.appendChild(tr);
+      });
+    }
+
+    function closeSummary() {
+      document.getElementById('summaryModal').style.display =
+        'none';
+    }
+
+    function showExamScores() {
+      const modal =
+        document.getElementById('examScoreModal');
+
+      const tbody =
+        document.getElementById('examScoreBody');
+
+      const meta =
+        document.getElementById('examScoreMeta');
+
+      tbody.innerHTML = '';
+
+      if (!Array.isArray(students) || !students.length) {
+        meta.textContent = 'ไม่พบข้อมูลนักเรียน';
+        tbody.innerHTML =
+          '<tr><td colspan="3" style="text-align:center;padding:40px;">' +
+          'ไม่พบข้อมูลนักเรียน</td></tr>';
+
+        modal.style.display = 'flex';
+        return;
+      }
+
+      let scoreCount = 0;
+
+      students.forEach(function(student) {
+        const tr = document.createElement('tr');
+
+        const noCell = document.createElement('td');
+        noCell.textContent = student.no || '';
+
+        const nameCell = document.createElement('td');
+
+        const nickname = document.createElement('div');
+        nickname.style.fontWeight = '600';
+        nickname.textContent = student.nickname || '';
+
+        const firstname = document.createElement('div');
+        firstname.className = 'muted';
+        firstname.textContent = student.firstname || '';
+
+        nameCell.appendChild(nickname);
+        nameCell.appendChild(firstname);
+
+        const scoreCell = document.createElement('td');
+        scoreCell.style.textAlign = 'center';
+
+        const score = student.examscore;
+
+        if (
+          score !== null &&
+          score !== undefined &&
+          String(score).trim() !== '' &&
+          !isNaN(Number(score))
+        ) {
+          scoreCell.textContent = Number(score);
+          scoreCount++;
+        } else {
+          scoreCell.textContent = '';
+        }
+
+        tr.appendChild(noCell);
+        tr.appendChild(nameCell);
+        tr.appendChild(scoreCell);
+        tbody.appendChild(tr);
+      });
+
+      meta.textContent = scoreCount > 0
+        ? 'แสดงคะแนนสอบปลายภาคของนักเรียนทั้งหมด'
+        : 'ยังไม่มีการบันทึกคะแนนสอบปลายภาค';
+
+      modal.style.display = 'flex';
+    }
+
+    function closeExamScores() {
+      document.getElementById('examScoreModal').style.display =
+        'none';
+    }
+
+    async function createPdf_(element, filename, orientation) {
+      if (
+        typeof window.html2canvas !== 'function' ||
+        !window.jspdf ||
+        typeof window.jspdf.jsPDF !== 'function'
+      ) {
+        throw new Error('ไม่พบไลบรารี PDF');
+      }
+
+      const canvas = await window.html2canvas(element, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: false,
+        backgroundColor: '#fff',
+        logging: false
+      });
+
+      const pdf = new window.jspdf.jsPDF(
+        orientation,
+        'mm',
+        'a4'
+      );
+
+      const imageData = canvas.toDataURL('image/png');
+      const pageWidth =
+        pdf.internal.pageSize.getWidth();
+      const pageHeight =
+        pdf.internal.pageSize.getHeight();
+      const imageHeight =
+        canvas.height * pageWidth / canvas.width;
+
+      let remaining = imageHeight;
+      let position = 0;
+
+      pdf.addImage(
+        imageData,
+        'PNG',
+        0,
+        position,
+        pageWidth,
+        imageHeight
+      );
+
+      remaining -= pageHeight;
+
+      while (remaining > 0) {
+        position = remaining - imageHeight;
+        pdf.addPage();
+
+        pdf.addImage(
+          imageData,
+          'PNG',
+          0,
+          position,
+          pageWidth,
+          imageHeight
+        );
+
+        remaining -= pageHeight;
+      }
+
+      pdf.save(filename);
+    }
+
+    async function exportPDF() {
+      showLoading(true, 'กำลังสร้างไฟล์ PDF รายวัน...');
+
+      const elements = [
+        document.getElementById('dateControls'),
+        document.getElementById('searchToolbar'),
+        document.getElementById('actionButtons')
+      ];
+
+      try {
+        elements.forEach(function(element) {
+          element.classList.add('hide-for-pdf');
+        });
+
+        const date =
+          document.getElementById('attendanceDate').value ||
+          'unknown-date';
+
+        await createPdf_(
+          document.getElementById('reportArea'),
+          'SmartClassroom_Daily_' + date + '.pdf',
+          'l'
+        );
+
+        showToast('ดาวน์โหลด PDF รายวันเรียบร้อย');
+      } catch (error) {
+        showToast(
+          'สร้าง PDF ไม่สำเร็จ: ' +
+          getErrorMessage(error)
+        );
+      } finally {
+        elements.forEach(function(element) {
+          element.classList.remove('hide-for-pdf');
+        });
+
+        showLoading(false);
+      }
+    }
+
+    async function exportSummaryPDF() {
+      showLoading(true, 'กำลังสร้างไฟล์ PDF สรุปรวม...');
+
+      const footer =
+        document.querySelector('#summaryModal .modal-footer');
+
+      try {
+        if (footer) {
+          footer.classList.add('hide-for-pdf');
+        }
+
+        await createPdf_(
+          document.getElementById('summaryPrintArea'),
+          'SmartClassroom_Summary_All.pdf',
+          'p'
+        );
+
+        showToast('ดาวน์โหลด PDF สรุปรวมเรียบร้อย');
+      } catch (error) {
+        showToast(
+          'สร้าง PDF ไม่สำเร็จ: ' +
+          getErrorMessage(error)
+        );
+      } finally {
+        if (footer) {
+          footer.classList.remove('hide-for-pdf');
+        }
+
+        showLoading(false);
+      }
+    }
+
+    window.addEventListener('load', function() {
+      init();
+      startAutoRefresh();
+    });
+
+    document.addEventListener('visibilitychange', function() {
+      if (!document.hidden) {
+        refreshDashboardOnly();
+      }
+    });
+
+    window.addEventListener('resize', function() {
+      clearTimeout(window.chartResizeTimer);
+
+      window.chartResizeTimer = setTimeout(function() {
+        drawChart(
+          latestDashboard.present,
+          latestDashboard.absent
+        );
+      }, 150);
+    });
+
+    window.addEventListener('click', function(event) {
+      if (
+        event.target === document.getElementById('summaryModal')
+      ) {
+        closeSummary();
+      }
+
+      if (
+        event.target === document.getElementById('examScoreModal')
+      ) {
+        closeExamScores();
+      }
+    });
+  </script>
+</body>
+</html>
