@@ -111,15 +111,15 @@
 
 ### Teacher Dashboard
 
-![Teacher Dashboard](screenshots/Dashboard.png)
+![Teacher Dashboard](Dashboard.png)
 
 ### Student Portal
 
-![Student Portal](screenshots/Student-login.png)
+![Student Portal](Student-login.png)
 
 ### QR Code Page
 
-![QR Code Page](screenshots/QR-page.png)
+![QR Code Page](/QR-page.png)
 
 - อย่าแจก URL หน้าครูให้นักเรียน
 - แจกเฉพาะ QR หรือ URL `?page=Student`
