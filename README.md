@@ -111,15 +111,15 @@
 
 ### Teacher Dashboard
 
-![Teacher Dashboard](screenshots/dashboard.png)
+![Teacher Dashboard](Screenshot 2026-08-02 182848.png)
 
 ### Student Portal
 
-![Student Portal](screenshots/student-login.png)
+![Student Portal](Screenshot 2026-08-02 182820.png)
 
 ### Student Result
 
-![Student Result](screenshots/student-result.png)
+![Student Result](Screenshot 2026-08-02 182911.png)
 
 ### QR Code Page
 
