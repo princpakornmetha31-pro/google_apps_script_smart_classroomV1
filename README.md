@@ -107,6 +107,23 @@
 คำเตือน: การสร้างปฏิทินจะล้างชีต Attendance เดิม
 
 ## หมายเหตุด้านความปลอดภัย
+## Screenshots
+
+### Teacher Dashboard
+
+![Teacher Dashboard](screenshots/dashboard.png)
+
+### Student Portal
+
+![Student Portal](screenshots/student-login.png)
+
+### Student Result
+
+![Student Result](screenshots/student-result.png)
+
+### QR Code Page
+
+![QR Code Page](screenshots/qr-page.png)
 
 - อย่าแจก URL หน้าครูให้นักเรียน
 - แจกเฉพาะ QR หรือ URL `?page=Student`
